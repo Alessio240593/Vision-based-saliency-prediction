@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 
@@ -58,14 +59,21 @@ class UNet(nn.Module):
             nn.Sigmoid()
         )
 
+        self.apply(self._init_weights)
+
+    def _init_weights(self, module):
+        if isinstance(module, (nn.Conv2d, nn.Linear)):
+            torch.nn.init.xavier_uniform_(module.weight)
+
+            if module.bias is not None:
+                module.bias.data.zero_()
+
     def forward(self, x):
         x = self.encoder1(x)
         x = self.encoder2(x)
         x = self.encoder3(x)
         x = self.encoder4(x)
-
         x = self.bottleneck(x)
-
         x = self.decoder1(x)
         x = self.decoder2(x)
         x = self.decoder3(x)
